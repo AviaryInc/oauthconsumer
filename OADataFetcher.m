@@ -105,7 +105,10 @@
     didFailSelector = failSelector;
     didWriteBytesSelector = writeBytesSelector;
     
-    [request prepare];
+//    [request prepare]; // For some reason, this causes the signature to become invalid.
+    
+//    DLog(@"Request Headers: %@", [aRequest allHTTPHeaderFields]);
+//    DLog(@"Request Headers: %@", [aRequest HTTPBody]);
     
 	connection = [[NSURLConnection alloc] initWithRequest:aRequest delegate:self startImmediately:NO];
     [connection scheduleInRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
