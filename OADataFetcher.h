@@ -28,7 +28,7 @@
 #import "OAServiceTicket.h"
 
 
-@interface OADataFetcher : NSObject {
+@interface OADataFetcher : NSObject<NSURLConnectionDataDelegate> {
 @private
     OAMutableURLRequest *request;
     NSURLResponse *response;
@@ -37,8 +37,11 @@
     id delegate;
     SEL didFinishSelector;
     SEL didFailSelector;
+    SEL didWriteBytesSelector;
 }
 
 - (void)fetchDataWithRequest:(OAMutableURLRequest *)aRequest delegate:(id)aDelegate didFinishSelector:(SEL)finishSelector didFailSelector:(SEL)failSelector;
+- (void)fetchDataWithRequest:(OAMutableURLRequest *)aRequest delegate:(id)aDelegate didFinishSelector:(SEL)finishSelector didFailSelector:(SEL)failSelector didWriteBytesSelector:(SEL)writeBytesSelector;
+- (void)cancelDataFetch;
 
 @end

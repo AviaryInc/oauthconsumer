@@ -50,7 +50,14 @@
 	response = [aResponse retain];
 	[responseData setLength:0];
 }
-	
+
+- (void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
+{
+    if(didWriteBytesSelector){
+        [delegate performSelector:didWriteBytesSelector withObject:[NSNumber numberWithInteger:totalBytesWritten] withObject:[NSNumber numberWithInteger:totalBytesExpectedToWrite]];
+    }
+}
+
 - (void)connection:(NSURLConnection *)aConnection didFailWithError:(NSError *)error {
 	OAServiceTicket *ticket = [[OAServiceTicket alloc] initWithRequest:request
 															  response:response
@@ -75,16 +82,39 @@
 	[ticket release];
 }
 
-- (void)fetchDataWithRequest:(OAMutableURLRequest *)aRequest delegate:(id)aDelegate didFinishSelector:(SEL)finishSelector didFailSelector:(SEL)failSelector {
+- (void)fetchDataWithRequest:(OAMutableURLRequest *)aRequest delegate:(id)aDelegate didFinishSelector:(SEL)finishSelector didFailSelector:(SEL)failSelector{
 	[request release];
 	request = [aRequest retain];
     delegate = aDelegate;
     didFinishSelector = finishSelector;
     didFailSelector = failSelector;
+    didWriteBytesSelector = nil;
     
     [request prepare];
 
-	connection = [[NSURLConnection alloc] initWithRequest:aRequest delegate:self];
+	connection = [[NSURLConnection alloc] initWithRequest:aRequest delegate:self startImmediately:NO];
+    [connection scheduleInRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+    [connection start];
+}
+
+- (void)fetchDataWithRequest:(OAMutableURLRequest *)aRequest delegate:(id)aDelegate didFinishSelector:(SEL)finishSelector didFailSelector:(SEL)failSelector didWriteBytesSelector:(SEL)writeBytesSelector{
+	[request release];
+	request = [aRequest retain];
+    delegate = aDelegate;
+    didFinishSelector = finishSelector;
+    didFailSelector = failSelector;
+    didWriteBytesSelector = writeBytesSelector;
+    
+    [request prepare];
+    
+	connection = [[NSURLConnection alloc] initWithRequest:aRequest delegate:self startImmediately:NO];
+    [connection scheduleInRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+    [connection start];
+}
+
+- (void)cancelDataFetch
+{
+    [connection cancel];
 }
 
 @end
